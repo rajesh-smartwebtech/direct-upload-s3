@@ -69,6 +69,8 @@ class Signature
 
     ];
 
+    protected $policy_para = [];
+
     /**
      * @var string the AWS Key
      */
@@ -216,6 +218,7 @@ class Signature
         }
     }
 
+
     /**
      * Get an AWS Signature V4 generated.
      *
@@ -253,6 +256,13 @@ class Signature
             'X-amz-date' => $this->getFullDateFormat(),
             'X-amz-signature' => $this->signature
         ];
+
+
+        if( count($this->getPolicyParaDataArray()) > 0 ){
+            foreach ($this->getPolicyParaDataArray() as $key => $value) {
+                $inputs[str_replace('$','',$value[1])] = isset($value[3])?$value[3]:'' ;
+            }
+        }
 
         $inputs = array_merge($inputs, $this->options['additional_inputs']);
 
@@ -316,8 +326,18 @@ class Signature
                 ['x-amz-credential' => $this->credentials],
                 ['x-amz-algorithm' => self::ALGORITHM],
                 ['x-amz-date' => $this->getFullDateFormat()]
+
+                /*['starts-with', '$x-amz-meta-tag', '']*/
             ]
         ];
+
+
+        if( count($this->getPolicyParaDataArray()) > 0 ){
+            foreach ($this->getPolicyParaDataArray() as $key => $value) {
+                array_push($policy['conditions'], array($value[0],$value[1],$value[2]) );
+            }
+        }
+
         $policy = $this->addAdditionalInputs($policy);
         $this->base64Policy = base64_encode(json_encode($policy));
     }
@@ -331,6 +351,29 @@ class Signature
             $this->options['content_type']
         ];
     }
+
+    public function addPolicyOption($options)
+    {
+        array_push($this->policy_para, $options);
+    }
+
+    public function addMetaData($tagname,$condition='',$default_value = '')
+    {
+        $data = array('starts-with', '$x-amz-meta-'.$tagname, $condition,$default_value);
+        $this->addPolicyOption($data);
+    }
+
+    /*public function addEqualMetaData($tagname,$datavalue)
+    {
+        $data = array('StringEquals', '$x-amz-meta-'.$tagname, $datavalue,$datavalue);
+        $this->addPolicyOption($data);
+    }*/
+
+    private function getPolicyParaDataArray()
+    {
+        return $this->policy_para;
+    }
+
 
     private function addAdditionalInputs($policy)
     {
