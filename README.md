@@ -90,6 +90,9 @@ Options can be passed into the Signature class as a fifth parameter, below is a 
 | custom_url        | null        | Allow S3 compatible solutions by specifying the domain it should POST to. Must be a valid url (inc. http/https) otherwise will throw InvalidOptionException. |
 | accelerate        | false       | Set Amazon S3 Transfer Acceleration - more info @ [http://amzn.to/2xKblKe](http://amzn.to/2xKblKe). Should be a true or false bool. |
 | additional_inputs |             | Any additional inputs to add to the form. This is an array of name => value pairs e.g. ['Content-Disposition' => 'attachment'] |
+| addPolicyOption |      []       | Example of array ['starts-with', '$x-amz-meta-tag',''] |
+| addMetaData |             | e.g  $obj->addMetaData('metadata tag name', 'condition for start with ', 'default value in html input') |
+
 
 For example:
 
